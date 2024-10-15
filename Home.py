@@ -1,11 +1,10 @@
-import dash
+from dash import dcc, html, dash
 import dash_bootstrap_components as dbc
-from dash import dcc, html
+from dash.dependencies import Input, Output, State
 import plotly.graph_objs as go
-from dash.dependencies import Input, Output
 import random
 
-# Initialize the app
+# Initialize the Dash app (not Flask)
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY])
 
 
@@ -23,8 +22,8 @@ def generate_pleth_wave():
     )
 
 
-# Layout for vitals
-app.layout = dbc.Container(
+# Home page layout
+home_layout =  dbc.Container(
     [
         dbc.Row(
             [
@@ -75,6 +74,7 @@ app.layout = dbc.Container(
 )
 
 
+# Callback to update the home page values (place in `login.py` since app is there)
 # Callback for updating values every second
 @app.callback(
     [Output("heart-rate", "children"),
@@ -94,7 +94,3 @@ def update_vitals(n):
 
     return heart_rate, pleth_wave, blood_pressure, temperature
 
-
-# Run the app
-if __name__ == '__main__':
-    app.run_server(debug=True)
