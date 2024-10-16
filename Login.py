@@ -5,15 +5,14 @@ from dash.dependencies import Input, Output, State
 from datetime import date
 import psycopg2  # Import psycopg2 to connect to PostgreSQL
 
-from Home import home_layout
 
-# Initialize the Dash app (Now it's a global app object)
+# Initialize the Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
 
-# PostgreSQL's connection (replace with your actual connection details)
-DB_CONNECTION = "postgresql://postgres.ysthgyildvykrrxyremj:vg1okT8Ht5kiayW4@aws-0-eu-central-1.pooler.supabase.com:6543/postgres"
+# PostgreSQL connection string (replace with your actual connection details)
+DB_CONNECTION = "postgresql://your_connection_string_here"
 
-# Define the layout for the entire application, including routing
+# Define the layout for the application, including routing
 app.layout = dbc.Container(
     [
         dcc.Location(id="url", refresh=False),  # For routing
@@ -96,6 +95,7 @@ login_layout = dbc.Container(
     className="mt-5"
 )
 
+
 # Function to insert patient data into PostgreSQL
 def insert_patient_data(first_name, last_name, age, date_value, weight, height):
     try:
@@ -115,6 +115,7 @@ def insert_patient_data(first_name, last_name, age, date_value, weight, height):
     except Exception as e:
         return f"Error saving data: {e}"
 
+
 # Callback to capture form data, display it, and save to PostgreSQL, then redirect
 @app.callback(
     [Output("output", "children"),
@@ -131,7 +132,7 @@ def insert_patient_data(first_name, last_name, age, date_value, weight, height):
 )
 def display_patient_data(n_clicks, first_name, last_name, age, date_value, weight, height):
     if n_clicks is None:
-        return "", "", False, ""  # No toast open
+        return "", "/", False, ""  # No toast open
 
     if all([first_name, last_name, age, date_value, weight, height]):
         save_message = insert_patient_data(first_name, last_name, age, date_value, weight, height)
@@ -145,13 +146,18 @@ def display_patient_data(n_clicks, first_name, last_name, age, date_value, weigh
     else:
         return html.P("Please fill in all fields.", className="text-danger"), "", False, ""  # No toast open
 
+
 # Callback to handle page routing
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def display_page(pathname):
     if pathname == "/home":
+        print(pathname)
+        from Home import home_layout
         return home_layout  # Return the layout for the home page
     else:
+        print(pathname)
         return login_layout  # Default to the login page
+
 
 # Run the app
 if __name__ == "__main__":
