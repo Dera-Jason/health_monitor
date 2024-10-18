@@ -1,163 +1,288 @@
-from dash import dcc, html, dash
+from dash import Dash, html, dcc
 import dash_bootstrap_components as dbc
 from dash.dependencies import Input, Output, State
-import plotly.graph_objs as go
-import random
+from datetime import date
+import time
+import psycopg2
 
-# Initialize the Dash app with suppress_callback_exceptions
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.DARKLY], suppress_callback_exceptions=True)
+app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
 
-
-# Initialize the Pleth Waveform
-def generate_pleth_wave():
-    return go.Figure(go.Scatter(
-        y=[random.uniform(-0.2, 1.2) for _ in range(100)],  # Simulated random waveform
-        mode='lines',
-        line=dict(color='#00ccff', width=2)
-    )).update_layout(
-        paper_bgcolor='black', plot_bgcolor='black',
-        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-        height=200, margin=dict(l=0, r=0, t=10, b=10)
-    )
-
-
-# Home page layout
-home_layout = dbc.Container(
+home_layout = html.Div(
     [
-        dcc.Location(id='url'),  # Added for routing purposes
-        # Heart rate row
+        # First Row - Heart rate and graph
         dbc.Row(
             [
                 dbc.Col(
                     [
-                        html.Label("HR", style={"color": "green", "font-size": "24px"}),
-                        html.H2(id="heart-rate", style={"color": "green", "font-size": "50px"}),
-                        html.Span("bpm", style={"color": "green", "font-size": "20px"}),
-                        html.Div(id="hr-limit-form", style={"display": "none"}),  # Form hidden initially
-                        dbc.Button("Set Limit", id="set-hr-limit-btn", n_clicks=0, color="warning", style={"margin-top": "8px"}),
-                        html.Div(id="hr-submit-msg", style={"color": "green", "margin-top": "10px"})  # Success message
-                    ], width=3
+                        html.Div(
+                            [
+                                html.Label("Heart Rate (HR)", style={"color": "green", "font-size": "24px"}),
+                                html.H2("120", id="heart-rate", style={"color": "green", "font-size": "50px"}),
+                                html.Span("bpm", style={"color": "green", "font-size": "20px"}),
+                            ],
+                            className="data-box"  # Consistent styling with other sections
+                        ),
+                    ],
+                    width={"size": 3},  # For larger screens
+                    xs=12, sm=6, md=6, lg=3, xl=3,  # Responsive grid behavior
                 ),
-                # Pleth wave column
                 dbc.Col(
                     [
-                        html.Label("Pleth", style={"color": "#00ccff", "font-size": "24px"}),
-                        dcc.Graph(id="pleth-wave", config={'displayModeBar': False}, style={"height": "250px"})
-                    ], width=9
-                ),
+                        dcc.Graph(id="pleth-wave", config={'displayModeBar': False}, style={"height": "150px"})
+                    ],
+                    width={"size": 9},  # For larger screens
+                    xs=12, sm=6, md=6, lg=9, xl=9
+                )
             ], className="g-3", style={"padding": "20px"}
         ),
 
-        # Blood Pressure
+        # Second Row - Blood Pressure, Temperature, and SPO2
+        dbc.Row(
+            [
+                # Blood Pressure
+                dbc.Col(
+                    html.Div(
+                        [
+                            html.H2("Blood Pressure (NBP)", className="label"),
+                            html.H1(
+                                [
+                                    html.Sup("Sys", style={"font-size": "12px", "vertical-align": "super",
+                                                           "margin-right": "4px"}), "86",
+                                    # Systolic value with Superscript
+                                    "/",
+                                    "43", html.Sup("Dia", style={"font-size": "12px", "vertical-align": "super",
+                                                                 "margin-left": "4px"})
+                                    # Diastolic value with Superscript
+                                ],
+                                className="value"),
+                        ],
+                        className="data-box"
+                    ),
+                    width={"size": 4},  # For larger screens
+                    xs=12, sm=6, md=4, lg=4, xl=4,
+                ),
+
+                # Temperature
+                dbc.Col(
+                    html.Div(
+                        [
+                            html.H2("Temperature (Temp)", className="label"),
+                            html.H1("36.9°C", className="value"),
+                        ],
+                        className="data-box"
+                    ),
+                    width={"size": 4},  # For larger screens
+                    xs=12, sm=4, md=4, lg=4, xl=4,
+                ),
+
+                # SPO2
+                dbc.Col(
+                    html.Div(
+                        [
+                            html.H2("SPO2", className="label"),
+                            html.H1("99%", className="value"),
+                        ],
+                        className="data-box"
+                    ),
+                    width={"size": 4},
+                    xs=12, sm=4, md=4, lg=4, xl=4,
+                ),
+            ],
+            className="row-style"
+        ),
+
+        # Third Row - Buttons for actions
         dbc.Row(
             [
                 dbc.Col(
-                    [
-                        html.Label("NBP (Systolic/Diastolic)", style={"color": "purple", "font-size": "24px"}),
-                        html.H2(id="blood-pressure", style={"color": "purple", "font-size": "50px"}),
-                        html.Span("mmHg", style={"color": "purple", "font-size": "20px"}),
-                        dbc.Button("Set Limit", id="set-hr-limit-btn", color="warning", style={"margin-top": "10px"}),
-                        html.Div(id="hr-limit-form", style={"display": "none"}),  # Form hidden initially
-                        html.Div(id="hr-submit-msg", style={"color": "green", "margin-top": "10px"})  # Success message
-                    ], width=6
+                    dbc.Button("Login Another Patient", color="primary", className="action-btn", href="/login"),
+                    width={"size": 6},  # For larger screens
+                    xs=12, sm=6, md=6, lg=6, xl=6,  # Responsive grid behavior
                 ),
                 dbc.Col(
-                    [
-                        html.Label("Temp", style={"color": "orange", "font-size": "24px"}),
-                        html.H2(id="temperature", style={"color": "orange", "font-size": "50px"}),
-                        html.Span("°C", style={"color": "orange", "font-size": "20px"}),
-                        dbc.Button("Set Limit", id="set-hr-limit-btn", color="warning", style={"margin-top": "10px"}),
-                        html.Div(id="hr-limit-form", style={"display": "none"}),  # Form hidden initially
-                        html.Div(id="hr-submit-msg", style={"color": "green", "margin-top": "10px"})  # Success message
-                    ], width=6
+                    dbc.Button("View Patient History", color="primary", className="action-btn", href="/history"),
+                    width={"size": 6},  # For larger screens
+                    xs=12, sm=6, md=6, lg=6, xl=6,  # Responsive grid behavior
                 ),
-            ], className="g-3", style={"padding": "20px"}
-        ),
-        dbc.Row(
-            [
-                dbc.Col(
-                    dbc.Button("Add New Patient's Data", color="primary", style={"width": "100%", "font-size": "24px"}),
-                    width=12  # Full width for the button
-                ),
-            ], className="g-3", style={"padding": "20px"}
-        ),
-        dcc.Interval(id="interval-component", interval=1000, n_intervals=0)  # Updates every second
+            ], className="row-style"
+        )
     ],
-    style={"height": "100vh", "width": "100vw", "background-color": "black", "padding": "20px"}
+    className="main-container",
 )
 
-# Set the layout of the app to home_layout
-app.layout = home_layout
+# Layout for the patient login page
+login_layout = dbc.Container(
+    [
+        html.H2("Enter Patient Data", className="text-center mb-4"),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        dbc.Label("First Name"),
+                        dbc.Input(id="first-name", type="text", placeholder="Enter first name"),
+                    ],
+                    width=6
+                ),
+                dbc.Col(
+                    [
+                        dbc.Label("Last Name"),
+                        dbc.Input(id="last-name", type="text", placeholder="Enter last name"),
+                    ],
+                    width=6
+                ),
+            ]
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        dbc.Label("Age"),
+                        dbc.Input(id="age", type="number", placeholder="Enter age"),
+                    ],
+                    width=6
+                ),
+                dbc.Col(
+                    [
+                        dbc.Label("Date"),
+                        dbc.Input(id="date", type="text", value=str(date.today()), readonly=True),
+                    ],
+                    width=6
+                ),
+            ],
+            className="mt-3"
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        dbc.Label("Weight (kg)"),
+                        dbc.Input(id="weight", type="number", placeholder="Enter weight"),
+                    ],
+                    width=6
+                ),
+                dbc.Col(
+                    [
+                        dbc.Label("Height (cm)"),
+                        dbc.Input(id="height", type="number", placeholder="Enter height"),
+                    ],
+                    width=6
+                ),
+            ],
+            className="mt-3"
+        ),
+        # New Gender Section
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        dbc.Label("Gender"),
+                        dbc.RadioItems(
+                            options=[
+                                {"label": "Male", "value": "Male"},
+                                {"label": "Female", "value": "Female"}
+                            ],
+                            id="gender",
+                            inline=True,
+                        ),
+                    ],
+                    width=6
+                ),
+            ],
+            className="mt-3"
+        ),
+        dbc.Button("Submit", id="submit-button", color="primary", className="mt-4"),
+        dcc.Location(id='url-redirect', refresh=True),  # Hidden Location for redirecting
+        html.Div(id="output", className="mt-4"),  # For displaying the result
+    ],
+    className="mt-5"
+)
 
 
-# Callback for updating values every second
+# Function to insert patient data into PostgreSQL
+def insert_patient_data(first_name, last_name, age, date_value, weight, height):
+    try:
+        conn = psycopg2.connect(DB_CONNECTION)
+        cursor = conn.cursor()
+
+        query = """
+        INSERT INTO patients (first_name, last_name, age, date, weight, height, gender)
+        VALUES (%s, %s, %s, %s, %s, %s, %s);
+        """
+        cursor.execute(query, (first_name, last_name, age, date_value, weight, height, gender))
+        conn.commit()
+        cursor.close()
+        conn.close()
+
+        return "Data saved successfully!"
+    except Exception as e:
+        return f"Error saving data: {e}"
+
+
+# Callback to capture form data, display it, and save to PostgreSQL, then redirect
 @app.callback(
-    [Output("heart-rate", "children"),
-     Output("pleth-wave", "figure"),
-     Output("blood-pressure", "children"),
-     Output("temperature", "children")],
-    [Input("interval-component", "n_intervals")]
+    [Output("output", "children"),
+     Output("url", "pathname"),  # Redirect to /home after submission
+     Output("toast", "is_open"),  # Control the toast visibility
+     Output("toast", "children")],  # Set the toast message
+    [Input("submit-button", "n_clicks")],
+    [State("first-name", "value"),
+     State("last-name", "value"),
+     State("age", "value"),
+     State("date", "value"),
+     State("weight", "value"),
+     State("height", "value"),
+     State("Gender", "value")]
 )
-def update_vitals(n):
-    # Generate random values for vitals
-    heart_rate = random.randint(60, 100)
-    pleth_wave = generate_pleth_wave()
-    systolic = random.randint(90, 120)
-    diastolic = random.randint(60, 80)
-    blood_pressure = f"{systolic}/{diastolic}"
-    temperature = round(random.uniform(36.0, 38.0), 1)
+def display_patient_data(n_clicks, first_name, last_name, age, date_value, weight, height):
+    if n_clicks is None:
+        return "", "/", False, ""  # No toast open
 
-    return heart_rate, pleth_wave, blood_pressure, temperature
-
-
-# def limit_dropdown(vital_type):
-#     return dbc.FormGroup(
-#         [
-#             dbc.Label(f"Set High Limit for {vital_type}", style={"color": "white"}),
-#             dcc.Dropdown(
-#                 id=f"{vital_type}-high",
-#                 options=[{'label': str(i), 'value': i} for i in range(50, 201)],
-#                 placeholder="Select high limit"
-#             ),
-#             dbc.Label(f"Set Low Limit for {vital_type}", style={"color": "white"}),
-#             dcc.Dropdown(
-#                 id=f"{vital_type}-low",
-#                 options=[{'label': str(i), 'value': i} for i in range(0, 101)],
-#                 placeholder="Select low limit"
-#             ),
-#             dbc.Button("Submit", id="submit-heart-rate-limit", color="success", n_clicks=0)
-#         ]
-#     )
-
-#
-# # Callback to show the heart rate limit dropdowns when "Set Limit" is clicked and handle submission
-# @app.callback(
-#     [Output("hr-limit-form", "children"),
-#      Output("hr-limit-form", "style"),
-#      Output("hr-submit-msg", "children")],
-#     [Input("set-hr-limit-btn-hr", "n_clicks"),
-#      Input("set-hr-limit-btn-bp", "n_clicks"),
-#      Input("set-hr-limit-btn-temp", "n_clicks"),
-#      Input("submit-heart-rate-limit", "n_clicks")],
-#     [State("heart-rate-high", "value"), State("heart-rate-low", "value")],
-#     prevent_initial_call=True
-# )
-
-# def show_hr_limit_form(set_btn_clicks, submit_btn_clicks, high_limit, low_limit):
-#     ctx = dash.callback_context
-#
-#     if ctx.triggered and ctx.triggered[0]['prop_id'] == 'set-hr-limit-btn.n_clicks':
-#         form = limit_dropdown("heart-rate")  # Use the dropdown function
-#         return form, {"display": "block"}, dash.no_update  # Show form, no message yet
-#
-#     elif ctx.triggered and ctx.triggered[0]['prop_id'] == 'submit-heart-rate-limit.n_clicks':
-#         success_message = html.Div("Heart rate limits submitted successfully!", style={"color": "green"})
-#         return dash.no_update, {"display": "none"}, success_message  # Hide form, show success message
-#
-#     return dash.no_update, dash.no_update, dash.no_update
+    if all([first_name, last_name, age, date_value, weight, height]):
+        save_message = insert_patient_data(first_name, last_name, age, date_value, weight, height)
+        toast_message = "Form submitted successfully!"  # Set the toast message
+        return (
+            html.Div([html.H4("Patient Information"), html.P(f"First Name: {first_name}"), save_message]),
+            "/home",
+            True,  # Show toast after submission
+            toast_message  # Pass the toast message
+        )
+    else:
+        return html.P("Please fill in all fields.", className="text-danger"), "", False, ""  # No toast open
 
 
-# Run the app
+# Define the main layout of the app
+app.layout = html.Div([
+    dcc.Location(id='url', refresh=False),  # Enables the URL tracking
+    html.Div(id='page-content')])
+
+
+# Callback to update the page content based on the URL
+@app.callback(
+    Output('page-content', 'children'),
+    [Input('url', 'pathname')]
+)
+def display_page(pathname):
+    if pathname == '/login':
+        return login_layout
+    elif pathname == '/history':
+        return html.Div("Patient History Page")  # Placeholder for Patient History
+    else:
+        return home_layout
+
+
+# Callback to handle form submission and redirect to home page
+@app.callback(
+    Output('url-redirect', 'href'),
+    [Input('submit-button', 'n_clicks')],
+    [State('first-name', 'value'), State('last-name', 'value'), State('age', 'value')]
+)
+def submit_form(n_clicks, first_name, last_name, age):
+    if n_clicks is not None and first_name and last_name and age:
+        time.sleep(1)  # Simulate processing delay
+        return '/'  # Redirect to home page
+    return None
+
+
+# Running the app
 if __name__ == "__main__":
     app.run_server(debug=True)
