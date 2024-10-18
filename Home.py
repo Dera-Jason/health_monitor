@@ -12,6 +12,45 @@ DB_CONNECTION = "postgresql://postgres.ysthgyildvykrrxyremj:vg1okT8Ht5kiayW4@aws
 
 home_layout = html.Div(
     [
+        # New Div Container for displaying Name, Age, and Gender
+        dbc.Container(
+            [
+                html.H4("Patient Information", className="text-center mt-3"),
+                dbc.Row(
+                    [
+                        dbc.Col(
+                            html.Div(
+                                [
+                                    html.Label("Name", style={"font-weight": "bold"}),
+                                    html.P("John Doe", id="patient-name", style={"font-size": "20px"}),
+                                ]
+                            ),
+                            width=4
+                        ),
+                        dbc.Col(
+                            html.Div(
+                                [
+                                    html.Label("Age", style={"font-weight": "bold"}),
+                                    html.P("30", id="patient-age", style={"font-size": "20px"}),
+                                ]
+                            ),
+                            width=4
+                        ),
+                        dbc.Col(
+                            html.Div(
+                                [
+                                    html.Label("Gender", style={"font-weight": "bold"}),
+                                    html.P("Male", id="patient-gender", style={"font-size": "20px"}),
+                                ]
+                            ),
+                            width=4
+                        ),
+                    ]
+                )
+            ],
+            className="mb-4"
+        ),
+
         # First Row - Heart rate and graph
         dbc.Row(
             [

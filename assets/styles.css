@@ -1,0 +1,44 @@
+/* General container styling */
+.data-box {
+    background-color: #223;
+    color: green;
+    padding: 20px;
+    text-align: center;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+    margin: 20px 0;
+}
+
+/* Space between containers */
+.row-style {
+    margin-bottom: 20px;
+}
+
+.label {
+    font-size: 24px;
+}
+
+.value {
+    font-size: 50px;
+    font-weight: bold;
+}
+
+/* Adjust main container to cover two-thirds of the screen */
+.main-container {
+    background-color: black;
+    height: 100vh;
+    padding: 30px;
+    color: white;
+    font-family: Arial, sans-serif;
+    width: 80%;  /* Two-thirds of the screen */
+    margin: 0 auto;  /* Center it */
+}
+
+/* Responsive layout adjustments */
+@media (max-width: 768px) {
+    .data-box {
+        padding: 10px;
+        font-size: 14px;
+    }
+}
+
