@@ -101,58 +101,61 @@ app.layout = home_layout
 )
 def update_vitals(n):
     # Generate random values for vitals
-    heart_rate = random.randint(60, 120)
+    heart_rate = random.randint(60, 100)
     pleth_wave = generate_pleth_wave()
-    systolic = random.randint(90, 140)
-    diastolic = random.randint(60, 90)
+    systolic = random.randint(90, 120)
+    diastolic = random.randint(60, 80)
     blood_pressure = f"{systolic}/{diastolic}"
     temperature = round(random.uniform(36.0, 38.0), 1)
 
     return heart_rate, pleth_wave, blood_pressure, temperature
 
 
-def limit_dropdown(vital_type):
-    return dbc.FormGroup(
-        [
-            dbc.Label(f"Set High Limit for {vital_type}", style={"color": "white"}),
-            dcc.Dropdown(
-                id=f"{vital_type}-high",
-                options=[{'label': str(i), 'value': i} for i in range(50, 201)],
-                placeholder="Select high limit"
-            ),
-            dbc.Label(f"Set Low Limit for {vital_type}", style={"color": "white"}),
-            dcc.Dropdown(
-                id=f"{vital_type}-low",
-                options=[{'label': str(i), 'value': i} for i in range(0, 101)],
-                placeholder="Select low limit"
-            ),
-            dbc.Button("Submit", id="submit-heart-rate-limit", color="success", n_clicks=0)
-        ]
-    )
+# def limit_dropdown(vital_type):
+#     return dbc.FormGroup(
+#         [
+#             dbc.Label(f"Set High Limit for {vital_type}", style={"color": "white"}),
+#             dcc.Dropdown(
+#                 id=f"{vital_type}-high",
+#                 options=[{'label': str(i), 'value': i} for i in range(50, 201)],
+#                 placeholder="Select high limit"
+#             ),
+#             dbc.Label(f"Set Low Limit for {vital_type}", style={"color": "white"}),
+#             dcc.Dropdown(
+#                 id=f"{vital_type}-low",
+#                 options=[{'label': str(i), 'value': i} for i in range(0, 101)],
+#                 placeholder="Select low limit"
+#             ),
+#             dbc.Button("Submit", id="submit-heart-rate-limit", color="success", n_clicks=0)
+#         ]
+#     )
 
+#
+# # Callback to show the heart rate limit dropdowns when "Set Limit" is clicked and handle submission
+# @app.callback(
+#     [Output("hr-limit-form", "children"),
+#      Output("hr-limit-form", "style"),
+#      Output("hr-submit-msg", "children")],
+#     [Input("set-hr-limit-btn-hr", "n_clicks"),
+#      Input("set-hr-limit-btn-bp", "n_clicks"),
+#      Input("set-hr-limit-btn-temp", "n_clicks"),
+#      Input("submit-heart-rate-limit", "n_clicks")],
+#     [State("heart-rate-high", "value"), State("heart-rate-low", "value")],
+#     prevent_initial_call=True
+# )
 
-# Callback to show the heart rate limit dropdowns when "Set Limit" is clicked and handle submission
-@app.callback(
-    [Output("hr-limit-form", "children"),
-     Output("hr-limit-form", "style"),
-     Output("hr-submit-msg", "children")],
-    [Input("set-hr-limit-btn", "n_clicks"),
-     Input("submit-heart-rate-limit", "n_clicks")],
-    [State("heart-rate-high", "value"), State("heart-rate-low", "value")],
-    prevent_initial_call=True
-)
-def show_hr_limit_form(set_btn_clicks, submit_btn_clicks, high_limit, low_limit):
-    ctx = dash.callback_context
-
-    if ctx.triggered and ctx.triggered[0]['prop_id'] == 'set-hr-limit-btn.n_clicks':
-        form = limit_dropdown("heart-rate")  # Use the dropdown function
-        return form, {"display": "block"}, dash.no_update  # Show form, no message yet
-
-    elif ctx.triggered and ctx.triggered[0]['prop_id'] == 'submit-heart-rate-limit.n_clicks':
-        success_message = html.Div("Heart rate limits submitted successfully!", style={"color": "green"})
-        return dash.no_update, {"display": "none"}, success_message  # Hide form, show success message
-
-    return dash.no_update, dash.no_update, dash.no_update
+# def show_hr_limit_form(set_btn_clicks, submit_btn_clicks, high_limit, low_limit):
+#     ctx = dash.callback_context
+#
+#     if ctx.triggered and ctx.triggered[0]['prop_id'] == 'set-hr-limit-btn.n_clicks':
+#         form = limit_dropdown("heart-rate")  # Use the dropdown function
+#         return form, {"display": "block"}, dash.no_update  # Show form, no message yet
+#
+#     elif ctx.triggered and ctx.triggered[0]['prop_id'] == 'submit-heart-rate-limit.n_clicks':
+#         success_message = html.Div("Heart rate limits submitted successfully!", style={"color": "green"})
+#         return dash.no_update, {"display": "none"}, success_message  # Hide form, show success message
+#
+#     return dash.no_update, dash.no_update, dash.no_update
 
 
 # Run the app

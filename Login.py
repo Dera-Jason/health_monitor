@@ -89,12 +89,31 @@ login_layout = dbc.Container(
             ],
             className="mt-3"
         ),
+ # New Gender Section
+        dbc.Row(
+            [
+                dbc.Col(
+                    [
+                        dbc.Label("Gender"),
+                        dbc.RadioItems(
+                            options=[
+                                {"label": "Male", "value": "Male"},
+                                {"label": "Female", "value": "Female"}
+                            ],
+                            id="gender",
+                            inline=True,
+                        ),
+                    ],
+                    width=6
+                ),
+            ],
+            className="mt-3"
+        ),
         dbc.Button("Submit", id="submit-button", color="primary", className="mt-4"),
         html.Div(id="output", className="mt-4"),  # For displaying the result
     ],
     className="mt-5"
 )
-
 
 # Function to insert patient data into PostgreSQL
 def insert_patient_data(first_name, last_name, age, date_value, weight, height):
