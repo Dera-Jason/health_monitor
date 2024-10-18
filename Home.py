@@ -7,6 +7,9 @@ import psycopg2
 
 app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
 
+# PostgreSQL connection string (replace with your actual connection details)
+DB_CONNECTION = "postgresql://postgres.ysthgyildvykrrxyremj:vg1okT8Ht5kiayW4@aws-0-eu-central-1.pooler.supabase.com:6543/postgres"
+
 home_layout = html.Div(
     [
         # First Row - Heart rate and graph
@@ -199,7 +202,7 @@ login_layout = dbc.Container(
 
 
 # Function to insert patient data into PostgreSQL
-def insert_patient_data(first_name, last_name, age, date_value, weight, height):
+def insert_patient_data(first_name, last_name, age, date_value, weight, height, gender):
     try:
         conn = psycopg2.connect(DB_CONNECTION)
         cursor = conn.cursor()
@@ -231,14 +234,14 @@ def insert_patient_data(first_name, last_name, age, date_value, weight, height):
      State("date", "value"),
      State("weight", "value"),
      State("height", "value"),
-     State("Gender", "value")]
+     State("gender", "value")],
 )
-def display_patient_data(n_clicks, first_name, last_name, age, date_value, weight, height):
+def display_patient_data(n_clicks, first_name, last_name, age, date_value, weight, height, gender):
     if n_clicks is None:
         return "", "/", False, ""  # No toast open
 
-    if all([first_name, last_name, age, date_value, weight, height]):
-        save_message = insert_patient_data(first_name, last_name, age, date_value, weight, height)
+    if all([first_name, last_name, age, date_value, weight, height, gender]):
+        save_message = insert_patient_data(first_name, last_name, age, date_value, weight, height, gender)
         toast_message = "Form submitted successfully!"  # Set the toast message
         return (
             html.Div([html.H4("Patient Information"), html.P(f"First Name: {first_name}"), save_message]),
@@ -247,7 +250,7 @@ def display_patient_data(n_clicks, first_name, last_name, age, date_value, weigh
             toast_message  # Pass the toast message
         )
     else:
-        return html.P("Please fill in all fields.", className="text-danger"), "", False, ""  # No toast open
+        return html.P("Please fill in all fields.", className="text-danger"), "", False, "" #No toast open
 
 
 # Define the main layout of the app
