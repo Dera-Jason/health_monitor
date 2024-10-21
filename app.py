@@ -13,6 +13,7 @@ app.layout = html.Div([
     html.Div(id='page-content'),  # Dynamic content will be loaded here
 ])
 
+
 # Callback to handle page routing
 @app.callback(Output("page-content", "children"), [Input("url", "pathname")])
 def display_page(pathname):
