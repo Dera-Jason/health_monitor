@@ -12,7 +12,7 @@ def create_notification():
         header="Notification",
         is_open=False,  # Will be triggered on form submission
         dismissable=True,  # Allows users to close the toast
-        duration=3000,  # Toast will disappear after 3 seconds
+        duration=5000,  # Toast will disappear after 5 seconds
         icon="success",  # You can customize the icon (like 'primary', 'danger', etc.)
         style={"position": "fixed", "top": 10, "right": 10, "width": 350},
     )

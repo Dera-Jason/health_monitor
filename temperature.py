@@ -4,8 +4,7 @@ import time
 import datetime
 import csv
 
-
-#these tow lines mount the device:
+# These tow-lines mount the device:
 os.system('modprobe w1-gpio')
 os.system('modprobe w1-therm')
 
@@ -55,6 +54,7 @@ class DS18B20:
 
     def clear_rows(self):
         self.rows.clear()
+
 
 s = DS18B20()
 s.find_sensors()

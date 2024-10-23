@@ -11,20 +11,20 @@ DB_CONNECTION = os.environ["DB_CONNECTION"]
 
 # Function to insert patient data into PostgreSQL
 def insert_patient_data(first_name, last_name, age, date_value, weight, height, gender):
+    """Function to insert patient data into PostgreSQL"""
     try:
-        conn = psycopg2.connect(DB_CONNECTION)
-        cursor = conn.cursor()
+        with psycopg2.connect(DB_CONNECTION) as conn:
+            with conn.cursor() as cursor:
 
-        query = """
-        INSERT INTO patients (first_name, last_name, age, date, weight, height, gender)
-        VALUES (%s, %s, %s, %s, %s, %s, %s);
-        """
-        cursor.execute(query, (first_name, last_name, age, date_value, weight, height, gender))
-        conn.commit()
-        cursor.close()
-        conn.close()
+                query = """
+                INSERT INTO patients (first_name, last_name, age, date, weight, height, gender)
+                VALUES (%s, %s, %s, %s, %s, %s, %s);
+                """
+                cursor.execute(query, (first_name, last_name, age, date_value, weight, height, gender))
+                conn.commit()
+                cursor.close()
+                conn.close()
 
         return "Data saved successfully!"
     except Exception as e:
         return f"Error saving data: {e}"
-

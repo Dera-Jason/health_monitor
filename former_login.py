@@ -4,13 +4,17 @@ from dash import dcc, html
 from dash.dependencies import Input, Output, State
 from datetime import date
 import psycopg2  # Import psycopg2 to connect to PostgreSQL
+from dotenv import load_dotenv
+import os
 
+# Load environment variables from .env file
+load_dotenv()
+
+# PostgreSQL connection string (replace with your actual connection details)
+DB_CONNECTION = os.environ["DB_CONNECTION"]
 
 # Initialize the Dash app
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP], suppress_callback_exceptions=True)
-
-# PostgreSQL connection string (replace with your actual connection details)
-DB_CONNECTION = "postgresql://your_connection_string_here"
 
 # Define the layout for the application, including routing
 app.layout = dbc.Container(
@@ -114,6 +118,7 @@ login_layout = dbc.Container(
     ],
     className="mt-5"
 )
+
 
 # Function to insert patient data into PostgreSQL
 def insert_patient_data(first_name, last_name, age, date_value, weight, height):

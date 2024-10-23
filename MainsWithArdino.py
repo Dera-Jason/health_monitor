@@ -64,11 +64,13 @@ class DS18B20:
     def clear_rows(self):
         self.rows.clear()
 
+
 # Function to sound the buzzer
 def sound_buzzer(duration):
     GPIO.output(buzzer_pin, GPIO.HIGH)
     time.sleep(duration)
     GPIO.output(buzzer_pin, GPIO.LOW)
+
 
 # Function to read heart rate with buzzer functionality
 def heart_rate_monitor(args):
@@ -97,6 +99,7 @@ def heart_rate_monitor(args):
 
     except KeyboardInterrupt:
         print('Heart Rate monitor interrupted.')
+
 
 # Function to monitor temperature and beep accordingly
 def temperature_monitor():
@@ -132,6 +135,7 @@ def temperature_monitor():
         
         s.clear_rows()
         time.sleep(1)  # Adjust as needed to avoid too frequent readings
+
 
 # Function to read ECG values from Arduino
 def read_ecg_values():
